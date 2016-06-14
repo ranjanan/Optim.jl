@@ -44,7 +44,16 @@ end
 fixed_parameters(n) = (1.0, 2.0, 0.5, 0.5)
 adaptive_parameters(n) = (1.0, 1.0 + 2/n, 0.75 - 1/2n, 1.0 - 1/n)
 
-default_step{T}(initial_x::Array{T}) = ones(T, length(initial_x)) # a bit more general than just accepting n
+function default_step{T}(initial_x::Array{T}) # a bit more general than just accepting n
+    initial_step =  zeros(T, length(initial_x))
+    for i = 1:length(initial_x)
+        initial_step[i] = initial_x[i] == zero(T) ? 0.00025 : initial_step[i] = 0.05 * initial_x[i]
+    end
+    initial_step
+end
+
+unit_step{T}(initial_x::Array{T}) = ones(T, length(initial_x)) # a bit more general than just accepting n
+
 
 immutable NelderMead <: Optimizer
     parameters::Function
