@@ -44,15 +44,15 @@ end
 fixed_parameters(n) = (1.0, 2.0, 0.5, 0.5)
 adaptive_parameters(n) = (1.0, 1.0 + 2/n, 0.75 - 1/2n, 1.0 - 1/n)
 
-function default_step{T}(initial_x::Array{T}) # a bit more general than just accepting n
+function relative_step{T}(initial_x::Array{T}; s::T = 0.05) # a bit more general than just accepting n
     initial_step =  zeros(T, length(initial_x))
     for i = 1:length(initial_x)
-        initial_step[i] = initial_x[i] == zero(T) ? 0.00025 : initial_step[i] = 0.05 * initial_x[i]
+        initial_step[i] = initial_x[i] == zero(T) ? s : initial_step[i] = s * initial_x[i]
     end
-    initial_step
+    Diagonal(initial_step)
 end
 
-unit_step{T}(initial_x::Array{T}) = ones(T, length(initial_x)) # a bit more general than just accepting n
+unit_step{T}(initial_x::Array{T}) = Diagonal(ones(T, length(initial_x))) # a bit more general than just accepting n
 
 
 immutable NelderMead <: Optimizer
@@ -60,7 +60,7 @@ immutable NelderMead <: Optimizer
     initial_step::Function
 end
 
-NelderMead(; parameters = adaptive_parameters, initial_step = default_step) = NelderMead(parameters, initial_step)
+NelderMead(; parameters = adaptive_parameters, initial_step = relative_step) = NelderMead(parameters, initial_step)
 
 function print_header(mo::NelderMead, options::OptimizationOptions)
     if options.show_trace
@@ -107,7 +107,9 @@ function optimize{T}(f::Function,
     initial_step = mo.initial_step(initial_x)
 
     @simd for i in 1:m
-        @inbounds p[i, i] += initial_step[i]
+        for j in 1:m
+            @inbounds p[j, i] += initial_step[j, i]
+        end
     end
 
     # Setup parameters
