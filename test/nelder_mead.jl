@@ -4,6 +4,10 @@ using Optim
 for (name, prob) in Optim.UnconstrainedProblems.examples
 	f_prob = prob.f
 	res = Optim.optimize(f_prob, prob.initial_x, method=NelderMead())
+
+	if name == "Powell"
+		res = Optim.optimize(f_prob, prob.initial_x, method=NelderMead(), g_tol = 1e-9)
+	end
 	if name != "Large Polynomial" # FIX THIS!
 		@assert norm(res.minimum - prob.solutions) < 1e-2
 	end
