@@ -44,7 +44,7 @@ end
 fixed_parameters(n) = (1.0, 2.0, 0.5, 0.5)
 adaptive_parameters(n) = (1.0, 1.0 + 2/n, 0.75 - 1/2n, 1.0 - 1/n)
 
-function relative_step{T}(initial_x::Array{T}; s::T = 0.5)
+function relative_step{T}(initial_x::Array{T}; s = 0.5)
     initial_step =  zeros(T, length(initial_x))
     for i = 1:length(initial_x)
         initial_step[i] = s * initial_x[i] + 0.05*s
